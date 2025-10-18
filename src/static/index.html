@@ -10,9 +10,29 @@
     <header>
       <h1>Mergington High School</h1>
       <h2>Extracurricular Activities</h2>
+      <div class="header-actions">
+        <a href="statistics.html" class="stats-link">📊 View Statistics</a>
+      </div>
     </header>
 
     <main>
+      <!-- Registration Form at the Top -->
+      <section id="signup-container" class="registration-panel">
+        <h3>Quick Student Registration</h3>
+        <form id="quick-signup-form">
+          <div class="form-group">
+            <label for="student-email">Student Email:</label>
+            <input type="email" id="student-email" required placeholder="your-email@mergington.edu" />
+          </div>
+          <button type="button" id="set-email-btn">Set Email for Registration</button>
+        </form>
+        <div id="current-student" class="current-student" style="display: none;">
+          <p>Registering as: <strong id="student-display"></strong></p>
+          <button type="button" id="change-email-btn">Change Email</button>
+        </div>
+      </section>
+
+      <!-- Activities List -->
       <section id="activities-container">
         <h3>Available Activities</h3>
         <div id="activities-list">
@@ -21,24 +41,8 @@
         </div>
       </section>
 
-      <section id="signup-container">
-        <h3>Sign Up for an Activity</h3>
-        <form id="signup-form">
-          <div class="form-group">
-            <label for="email">Student Email:</label>
-            <input type="email" id="email" required placeholder="your-email@mergington.edu" />
-          </div>
-          <div class="form-group">
-            <label for="activity">Select Activity:</label>
-            <select id="activity" required>
-              <option value="">-- Select an activity --</option>
-              <!-- Activity options will be loaded here -->
-            </select>
-          </div>
-          <button type="submit">Sign Up</button>
-        </form>
-        <div id="message" class="hidden"></div>
-      </section>
+      <!-- Message Display -->
+      <div id="message" class="hidden"></div>
     </main>
 
     <footer>

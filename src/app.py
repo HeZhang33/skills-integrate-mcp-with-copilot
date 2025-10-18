@@ -130,3 +130,143 @@ def unregister_from_activity(activity_name: str, email: str):
     # Remove student
     activity["participants"].remove(email)
     return {"message": f"Unregistered {email} from {activity_name}"}
+
+
+@app.get("/statistics")
+def get_statistics():
+    """Get overall activity statistics"""
+    total_activities = len(activities)
+    total_participants = sum(len(activity["participants"]) for activity in activities.values())
+    total_capacity = sum(activity["max_participants"] for activity in activities.values())
+    
+    # Calculate average participation rate
+    if total_capacity > 0:
+        average_participation_rate = round((total_participants / total_capacity) * 100, 1)
+    else:
+        average_participation_rate = 0.0
+    
+    return {
+        "overview": {
+            "total_activities": total_activities,
+            "total_participants": total_participants,
+            "total_capacity": total_capacity,
+            "average_participation_rate": average_participation_rate
+        }
+    }
+
+
+@app.get("/statistics/popular")
+def get_popular_activities():
+    """Get most popular activities ranked by participation"""
+    activity_stats = []
+    
+    for name, details in activities.items():
+        participants_count = len(details["participants"])
+        max_participants = details["max_participants"]
+        participation_rate = round((participants_count / max_participants) * 100, 1) if max_participants > 0 else 0
+        
+        activity_stats.append({
+            "name": name,
+            "participants": participants_count,
+            "max_participants": max_participants,
+            "participation_rate": participation_rate,
+            "spots_available": max_participants - participants_count
+        })
+    
+    # Sort by participation count (descending)
+    activity_stats.sort(key=lambda x: x["participants"], reverse=True)
+    
+    # Add popularity rank
+    for i, activity in enumerate(activity_stats, 1):
+        activity["popularity_rank"] = i
+    
+    return {"popular_activities": activity_stats}
+
+
+@app.get("/statistics/participation")
+def get_participation_analysis():
+    """Get detailed participation rate analysis"""
+    participation_data = []
+    
+    for name, details in activities.items():
+        participants_count = len(details["participants"])
+        max_participants = details["max_participants"]
+        participation_rate = round((participants_count / max_participants) * 100, 1) if max_participants > 0 else 0
+        
+        # Categorize participation level
+        if participation_rate >= 80:
+            level = "high"
+        elif participation_rate >= 50:
+            level = "medium"
+        else:
+            level = "low"
+        
+        participation_data.append({
+            "activity": name,
+            "participants": participants_count,
+            "max_participants": max_participants,
+            "participation_rate": participation_rate,
+            "level": level,
+            "description": details["description"],
+            "schedule": details["schedule"]
+        })
+    
+    # Sort by participation rate (descending)
+    participation_data.sort(key=lambda x: x["participation_rate"], reverse=True)
+    
+    return {"participation_analysis": participation_data}
+
+
+@app.get("/statistics/trends")
+def get_trends_analysis():
+    """Get trends analysis for activities"""
+    # Since we don't have historical data, we'll provide current insights
+    trends = {
+        "capacity_utilization": {},
+        "recommendations": [],
+        "insights": []
+    }
+    
+    total_capacity = sum(activity["max_participants"] for activity in activities.values())
+    total_participants = sum(len(activity["participants"]) for activity in activities.values())
+    
+    # Calculate capacity utilization by activity type/category
+    high_demand_activities = []
+    low_demand_activities = []
+    
+    for name, details in activities.items():
+        participants_count = len(details["participants"])
+        max_participants = details["max_participants"]
+        utilization = round((participants_count / max_participants) * 100, 1) if max_participants > 0 else 0
+        
+        trends["capacity_utilization"][name] = utilization
+        
+        if utilization >= 80:
+            high_demand_activities.append(name)
+        elif utilization < 30:
+            low_demand_activities.append(name)
+    
+    # Generate recommendations
+    if high_demand_activities:
+        trends["recommendations"].append({
+            "type": "increase_capacity",
+            "message": f"Consider increasing capacity for high-demand activities: {', '.join(high_demand_activities)}",
+            "activities": high_demand_activities
+        })
+    
+    if low_demand_activities:
+        trends["recommendations"].append({
+            "type": "promote_activities",
+            "message": f"Consider promoting low-demand activities: {', '.join(low_demand_activities)}",
+            "activities": low_demand_activities
+        })
+    
+    # Generate insights
+    overall_utilization = round((total_participants / total_capacity) * 100, 1) if total_capacity > 0 else 0
+    trends["insights"] = [
+        f"Overall capacity utilization is {overall_utilization}%",
+        f"{len(high_demand_activities)} activities are in high demand (≥80% capacity)",
+        f"{len(low_demand_activities)} activities have low participation (<30% capacity)"
+    ]
+    
+    return {"trends": trends}
